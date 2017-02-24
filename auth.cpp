@@ -16,12 +16,12 @@ static int get_utc(struct connection *c)
 {
 	time_t t;
 	t = time(NULL);
-	return strftime(c->con_time, MAXBUF, "%Y-%m-%d %H:%M:%S", gmtime(&t));
+	return strftime(c->con_time, MAXBUF, "%Y-%m-%d %H:%M:%S", localtime(&t));
 }
 
 
 /* Stores the client's IP address in the connection sruct. */
-static int *get_client_ip(struct connection *c)
+static int get_client_ip(struct connection *c)
 {
 	struct sockaddr_storage tmp;
 	struct sockaddr_in *sock;
