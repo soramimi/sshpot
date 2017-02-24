@@ -1,7 +1,9 @@
 .*.swp
 *.log
 *.key
+*.key.pub
 *.o
+*.user
 
 rfc.txt
 libssh*
