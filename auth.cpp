@@ -9,6 +9,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
+#include <string>
+#include <string.h>
 
 
 /* Stores the current UTC time. Returns 0 on error. */
@@ -66,6 +68,42 @@ static int log_attempt(struct connection *c)
 	return r;
 }
 
+static int log_attempt2(struct connection *c)
+{
+	const int maxlogs = 100;
+	std::string logs[maxlogs];
+
+	FILE *f;
+	if ((f = fopen(LOGFILE2, "a+")) == NULL) {
+		fprintf(stderr, "Unable to open %s\n", LOGFILE);
+		return -1;
+	}
+
+	fseek(f, 0, SEEK_SET);
+
+	int i;
+	for (i = 0; i < maxlogs; i++) {
+		char tmp[1000];
+		if (!fgets(tmp, sizeof(tmp), f)) break;
+		int l = strlen(tmp);
+		while (l > 0 && isspace(tmp[l - 1] & 0xff)) l--;
+		logs[i] = std::string(tmp, l);
+	}
+
+
+	fseek(f, 0, SEEK_SET);
+	ftruncate(fileno(f), 0);
+
+	int r = fprintf(f, "%s %s %s %s\n", c->con_time, c->client_ip, c->user, c->pass);
+	for (int j = 0; j < i; j++) {
+		fputs(logs[j].c_str(), f);
+		putc('\n', f);
+	}
+
+	fclose(f);
+	return r;
+}
+
 
 /* Logs password auth attempts. Always replies with SSH_MESSAGE_USERAUTH_FAILURE. */
 int handle_auth(ssh_session session)
@@ -90,6 +128,7 @@ int handle_auth(ssh_session session)
 		/* Log the authentication request and disconnect. */
 		if (ssh_message_subtype(con.message) == SSH_AUTH_METHOD_PASSWORD) {
 			log_attempt(&con);
+			log_attempt2(&con);
 		}
 		else {
 			if (DEBUG) { fprintf(stderr, "Not a password authentication attempt.\n"); }
