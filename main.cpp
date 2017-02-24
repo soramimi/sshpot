@@ -46,24 +46,21 @@ static int valid_port(char *p) {
 /* Signal handler for cleaning up after children. We want to do cleanup
  * at SIGCHILD instead of waiting in main so we can accept multiple
  * simultaneous connections. */
-static int cleanup(void) {
+static void cleanup(int) {
     int status;
     int pid;
-    pid_t wait3(int *statusp, int options, struct rusage *rusage);
 
     while ((pid=wait3(&status, WNOHANG, NULL)) > 0) {
         if (DEBUG) { printf("process %d reaped\n", pid); }
     }
 
     /* Re-install myself for the next child. */
-    signal(SIGCHLD, (void (*)())cleanup);
-
-    return 0;
+	signal(SIGCHLD, cleanup);
 }
 
 
 /* SIGINT handler. Cleanup the ssh* objects and exit. */
-static void wrapup(void) {
+static void wrapup(int) {
     ssh_disconnect(session);
     ssh_bind_free(sshbind);
     ssh_finalize();
@@ -117,8 +114,8 @@ int main(int argc, char *argv[]) {
     }
 
     /* Install the signal handlers to cleanup after children and at exit. */
-    signal(SIGCHLD, (void (*)())cleanup);
-    signal(SIGINT, (void(*)())wrapup);
+	signal(SIGCHLD, cleanup);
+	signal(SIGINT, wrapup);
 
     /* Create and configure the ssh session. */
     session=ssh_new();

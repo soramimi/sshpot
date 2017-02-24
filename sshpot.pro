@@ -11,6 +11,6 @@ HEADERS += \
     config.h
 
 SOURCES += \
-    auth.c \
-    main.c
+    auth.cpp \
+    main.cpp
 

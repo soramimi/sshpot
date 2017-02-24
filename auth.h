@@ -10,8 +10,8 @@ struct connection {
     ssh_message message;
     char client_ip[MAXBUF];
     char con_time[MAXBUF];
-    char *user;
-    char *pass;
+	char const *user;
+	char const *pass;
 };
 
 int handle_auth(ssh_session session);
