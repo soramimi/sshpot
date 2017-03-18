@@ -41,14 +41,6 @@ static int get_client_ip(struct connection *c)
  * Returns -1 on error. */
 static int log_attempt(struct connection *c)
 {
-	FILE *f;
-	int r;
-
-	if ((f = fopen(LOGFILE, "a+")) == NULL) {
-		fprintf(stderr, "Unable to open %s\n", LOGFILE);
-		return -1;
-	}
-
 	if (get_utc(c) <= 0) {
 		fprintf(stderr, "Error getting time\n");
 		return -1;
@@ -62,19 +54,11 @@ static int log_attempt(struct connection *c)
 	c->user = ssh_message_auth_user(c->message);
 	c->pass = ssh_message_auth_password(c->message);
 
-	if (DEBUG) { printf("%s %s %s %s\n", c->con_time, c->client_ip, c->user, c->pass); }
-	r = fprintf(f, "%s %s %s %s\n", c->con_time, c->client_ip, c->user, c->pass);
-	fclose(f);
-	return r;
-}
-
-static int log_attempt2(struct connection *c)
-{
 	const int maxlogs = 100;
 	std::string logs[maxlogs];
 
 	FILE *f;
-	if ((f = fopen(LOGFILE2, "a+")) == NULL) {
+	if ((f = fopen(LOGFILE, "a+")) == NULL) {
 		fprintf(stderr, "Unable to open %s\n", LOGFILE);
 		return -1;
 	}
@@ -128,7 +112,6 @@ int handle_auth(ssh_session session)
 		/* Log the authentication request and disconnect. */
 		if (ssh_message_subtype(con.message) == SSH_AUTH_METHOD_PASSWORD) {
 			log_attempt(&con);
-			log_attempt2(&con);
 		}
 		else {
 			if (DEBUG) { fprintf(stderr, "Not a password authentication attempt.\n"); }

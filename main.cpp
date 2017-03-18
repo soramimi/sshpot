@@ -72,17 +72,18 @@ static void wrapup(int)
 }
 
 
-int main(int argc, char *argv[]) {
+int main(int argc, char **argv)
+{
 	int port = DEFAULTPORT;
 
 	/* Handle command line options. */
 	int next_opt = 0;
 	const char *short_opts = "hp:";
 	const struct option long_opts[] = {
-	{ "help",   0, NULL, 'h' },
-	{ "port",   1, NULL, 'p' },
-	{ NULL,     0, NULL, 0   }
-};
+		{ "help",   0, NULL, 'h' },
+		{ "port",   1, NULL, 'p' },
+		{ NULL,     0, NULL, 0   }
+	};
 
 	while (next_opt != -1) {
 		next_opt = getopt_long(argc, argv, short_opts, long_opts, NULL);
