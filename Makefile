@@ -10,3 +10,9 @@ sshpot: main.o auth.o
 clean:
 	rm -f *.o
 	rm -f sshpot
+
+install:
+	install sshpot /var/sshpot
+	install sshpot.rsa.key /var/sshpot/
+	install app/index.cgi /var/www/html/
+	install app/style.css /var/www/html/
