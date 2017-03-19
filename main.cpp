@@ -19,32 +19,6 @@ static ssh_session session;
 static ssh_bind sshbind;
 
 
-/* Print usage information to `stream', exit with `exit_code'. */
-static void usage(FILE *stream, int exit_code)
-{
-	fprintf(stream, "Usage: sshpot [-h] [-p <port>]\n");
-	fprintf(stream,
-			"   -h  --help          Display this usage information.\n"
-			"   -p  --port <port>   Port to listen on; defaults to 22.\n");
-	exit(exit_code);
-}
-
-
-/* Return the c-string `p' as an int if it is a valid port 
- * in the range of MINPORT - MAXPORT, or -1 if invalid. */
-static int valid_port(char *p)
-{
-	int port;
-	char *endptr;
-
-	port = strtol(p, &endptr, 10);
-	if (port >= MINPORT && port <= MAXPORT && !*endptr && errno == 0)
-		return port;
-
-	return -1;
-}
-
-
 /* Signal handler for cleaning up after children. We want to do cleanup
  * at SIGCHILD instead of waiting in main so we can accept multiple
  * simultaneous connections. */
@@ -72,51 +46,9 @@ static void wrapup(int)
 }
 
 
-int main(int argc, char **argv)
+int main()
 {
 	int port = DEFAULTPORT;
-
-	/* Handle command line options. */
-	int next_opt = 0;
-	const char *short_opts = "hp:";
-	const struct option long_opts[] = {
-		{ "help",   0, NULL, 'h' },
-		{ "port",   1, NULL, 'p' },
-		{ NULL,     0, NULL, 0   }
-	};
-
-	while (next_opt != -1) {
-		next_opt = getopt_long(argc, argv, short_opts, long_opts, NULL);
-		switch (next_opt) {
-		case 'h':
-			usage(stdout, 0);
-			break;
-
-		case 'p':
-			if ((port = valid_port(optarg)) < 0) {
-				fprintf(stderr, "Port must range from %d - %d\n\n", MINPORT, MAXPORT);
-				usage(stderr, 1);
-			}
-			break;
-
-		case '?':
-			usage(stderr, 1);
-			break;
-
-		case -1:
-			break;
-
-		default:
-			fprintf(stderr, "Fatal error, aborting...\n");
-			exit(1);
-		}
-	}
-
-	/* There shouldn't be any other parameters. */
-	if (argv[optind]) {
-		fprintf(stderr, "Invalid parameter `%s'\n\n", argv[optind]);
-		usage(stderr, 1);
-	}
 
 	/* Install the signal handlers to cleanup after children and at exit. */
 	signal(SIGCHLD, cleanup);
@@ -128,7 +60,7 @@ int main(int argc, char **argv)
 	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_BINDADDR, LISTENADDRESS);
 	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_BINDPORT, &port);
 	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_HOSTKEY, "ssh-rsa");
-	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_RSAKEY,RSA_KEYFILE);
+	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_RSAKEY,RSAKEYFILE);
 
 	/* Listen on `port' for connections. */
 	if (ssh_bind_listen(sshbind) < 0) {

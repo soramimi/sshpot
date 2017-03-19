@@ -1,0 +1,12 @@
+
+.attack {
+	border-top: 1px solid #8080ff;
+	padding: 4px;
+}
+
+.attack .uid, .attack .pwd {
+	font-weight: bold;
+}
+
+
+

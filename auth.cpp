@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <time.h>
+#include <sys/file.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
@@ -57,11 +58,12 @@ static int log_attempt(struct connection *c)
 	const int maxlogs = 100;
 	std::string logs[maxlogs];
 
-	FILE *f;
-	if ((f = fopen(LOGFILE, "a+")) == NULL) {
+	FILE *f = fopen(LOGFILE, "a+");
+	if (!f) {
 		fprintf(stderr, "Unable to open %s\n", LOGFILE);
 		return -1;
 	}
+	flock(fileno(f), LOCK_EX);
 
 	fseek(f, 0, SEEK_SET);
 
@@ -84,6 +86,7 @@ static int log_attempt(struct connection *c)
 		putc('\n', f);
 	}
 
+	flock(fileno(f), LOCK_UN);
 	fclose(f);
 	return r;
 }

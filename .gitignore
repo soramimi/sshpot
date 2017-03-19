@@ -1,10 +1,9 @@
-.*.swp
-*.log
 *.key
 *.key.pub
 *.o
 *.user
-
-rfc.txt
-libssh*
 sshpot
+share
+app/sshpot*
+app/sshpot.log
+app/*.key
